@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MSRP Calc</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Spline+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <div class="hero-content">
+          <p class="eyebrow">Vehicle export pricing</p>
+          <h1>MSRP structure for cross-border vehicle sales</h1>
+          <p class="subhead">
+            Calculate landed cost, duties, taxes, and margin for a quick MSRP
+            estimate using built-in destination tariff and tax baselines.
+          </p>
+        </div>
+        <div class="hero-card">
+          <div class="hero-stat">
+            <span class="stat-label">Last updated</span>
+            <span id="lastUpdated" class="stat-value">Needs update</span>
+          </div>
+          <div class="hero-stat">
+            <span class="stat-label">FTA eligibility</span>
+            <span id="ftaStatus" class="stat-value">Select countries</span>
+          </div>
+          <div class="hero-stat">
+            <span class="stat-label">Missing rates</span>
+            <span id="missingRates" class="stat-value">-</span>
+          </div>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="panel">
+          <h2>Step 1: Vehicle and pricing inputs</h2>
+          <div class="grid two">
+            <label class="field">
+              <span>Vehicle type</span>
+              <select id="vehicleType"></select>
+            </label>
+            <label class="field">
+              <span>Propulsion system</span>
+              <select id="propulsion"></select>
+            </label>
+            <label class="field">
+              <span>FOB price</span>
+              <input id="fobPrice" type="number" min="0" step="100" value="25000" />
+            </label>
+            <label class="field">
+              <span>FOB currency</span>
+              <select id="fobCurrency"></select>
+            </label>
+            <div class="field">
+              <span>FOB in USD</span>
+              <div id="fobUsdValue" class="readonly">$0</div>
+            </div>
+            <label class="field">
+              <span>OEM target margin (%)</span>
+              <input id="marginRate" type="number" min="0" step="0.1" value="8" />
+            </label>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Step 2: Origin and destination</h2>
+          <div class="grid two">
+            <div class="field-group">
+              <label class="field">
+                <span>Production country</span>
+                <select id="originCountry"></select>
+              </label>
+            </div>
+            <div class="field-group">
+              <label class="field">
+                <span>Sales country</span>
+                <select id="destCountry"></select>
+              </label>
+              <label class="field" id="destEuCountryField" style="display: none;">
+                <span>EU sales country</span>
+                <select id="destEuCountry"></select>
+              </label>
+              <label class="field" id="engineCcField" style="display: none;">
+                <span>Engine capacity (cc)</span>
+                <input id="engineCc" type="number" min="0" step="1" placeholder="e.g. 1800" />
+              </label>
+              <label class="field" id="co2Field" style="display: none;">
+                <span>CO2 emissions (g/km)</span>
+                <input id="co2Emissions" type="number" min="0" step="1" placeholder="e.g. 120" />
+              </label>
+              <label class="field" id="lengthField" style="display: none;">
+                <span>Vehicle length (mm)</span>
+                <input id="vLength" type="number" min="0" step="1" placeholder="e.g. 3990" />
+              </label>
+            </div>
+          </div>
+          <div class="panel-actions">
+            <button id="recalcMsrp" class="ghost" type="button">
+              Recalculate MSRP
+            </button>
+            <span id="recalcStatus" class="status">Using latest calculation</span>
+          </div>
+          <p class="hint">
+            Tariff eligibility is inferred from major FTAs. Confirm the exact
+            tariff rate with official customs sources.
+          </p>
+        </section>
+
+        <div id="modal" class="modal-container" style="display: none;">
+          <div class="modal-content">
+            <h2>Additional information needed</h2>
+            <p>The selected country and vehicle type requires more details for an accurate calculation.</p>
+            <div id="modalFields" class="grid"></div>
+            <div class="panel-actions">
+              <button id="modalSave" type="button">Continue</button>
+            </div>
+          </div>
+        </div>
+
+        <section class="panel">
+          <h2>Price structure</h2>
+          <div class="summary">
+            <div>
+              <span class="label">Estimated MSRP</span>
+              <strong id="msrpValue">$0</strong>
+            </div>
+            <div>
+              <span class="label">Total taxes & duties</span>
+              <strong id="taxesValue">$0</strong>
+            </div>
+            <div>
+              <span class="label">Landed cost</span>
+              <strong id="landedValue">$0</strong>
+            </div>
+          </div>
+          <table class="breakdown">
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Rate</th>
+                <th>Amount (USD)</th>
+              </tr>
+            </thead>
+            <tbody id="breakdownBody"></tbody>
+          </table>
+        </section>
+
+        <section class="panel">
+          <h2>Revenue planning</h2>
+          <div class="revenue-input-row">
+            <label class="field volume-field">
+              <span>Target sales volume (units)</span>
+              <input id="salesVolume" type="number" min="0" step="1" value="1000" />
+            </label>
+            <button id="calculateRevenue" class="ghost calc-btn" type="button">Calculate</button>
+          </div>
+          <div class="summary">
+            <div>
+              <span class="label">Total revenue</span>
+              <strong id="totalRevenue">$0</strong>
+            </div>
+            <div>
+              <span class="label">Total profit</span>
+              <strong id="totalProfit">$0</strong>
+            </div>
+            <div>
+              <span class="label">Profit per unit</span>
+              <strong id="profitPerUnit">$0</strong>
+            </div>
+          </div>
+          <p class="hint">
+            Revenue and profit are calculated based on the estimated MSRP and OEM margin above.
+          </p>
+        </section>
+
+        <section class="panel">
+          <h2>Sources for selected destination</h2>
+          <div id="sources" class="sources"></div>
+        </section>
+      </main>
+    </div>
+
+    <div id="modal" class="modal-container" style="display: none;">
+      <div class="modal-content">
+        <h2>Additional information required</h2>
+        <p>Please provide the following details for accurate tax calculation.</p>
+        <div class="grid one" id="modalFields">
+          <!-- Dynamic fields will be injected here -->
+        </div>
+        <div class="panel-actions">
+          <button id="modalSave" class="ghost">Save and Recalculate</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
