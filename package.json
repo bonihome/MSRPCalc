@@ -1,0 +1,13 @@
+{
+  "name": "msrpcalc",
+  "version": "1.0.0",
+  "description": "MSRP Calculator for vehicle exports",
+  "scripts": {
+    "start": "python3 -m http.server 3000",
+    "start-bg": "nohup python3 -m http.server 3000 > /tmp/msrpcalc-server.log 2>&1 &",
+    "stop": "pkill -f 'python3 -m http.server 3000'",
+    "status": "lsof -i :3000 || echo 'No server running on port 3000'"
+  },
+  "author": "",
+  "license": "MIT"
+}

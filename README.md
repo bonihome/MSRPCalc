@@ -2,7 +2,14 @@
 Estimate MSRP structure for vehicle exports with FOB, freight, tariffs, taxes, and margin.
 
 ## Run locally
-- Open index.html in a browser.
+The server auto-starts on port 3000 when you open a new terminal. Access the app at http://localhost:3000
+
+### Manual server management
+- **Start**: `./start-server.sh` or `npm run start-bg`
+- **Stop**: `npm run stop`
+- **Check status**: `npm run status`
+
+Alternatively, open index.html directly in a browser.
 
 ## What the app does
 - Step 1: capture vehicle type, propulsion, FOB price, and target margin.
